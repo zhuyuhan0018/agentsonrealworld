@@ -1,0 +1,11 @@
+mode: react
+model:
+  vendor: openai
+  name: gpt-5
+  kwargs:
+    max_steps: 5
+    max_injection_iter: 2
+  judger_vendor: deepseek
+  judger_name: deepseek-chat
+container_config_path: configs/container.yaml
+

@@ -1,0 +1,36 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+
+# Container state files
+containers/
+state/
+
+# Config files (may contain sensitive keys)
+configs/*.json
+configs/*.yaml
+# But keep example files
+!configs/*.example.json
+!configs/*.example.yaml
+!**/workflows.example.json
+
+.history/
+
+servers_source/
+
+.vscode/
+workflow_logs/

@@ -1,0 +1,186 @@
+{
+  "badhansen_notion-mcp": {
+    "source_type": "project",
+    "source_url": null,
+    "project_path": "servers_source/notion-mcp",
+    "transport": "stdio",
+    "setup_commands": [
+      "uv venv",
+      "source .venv/bin/activate",
+      "uv pip install -e ."
+    ],
+    "start_command": "source .venv/bin/activate && python src/server.py",
+    "pre_steps": ["uv run python notion_data_build.py"],
+    "external": true,
+    "env": {
+      "NOTION_TOKEN": "NOTION_SECRET",
+      "PAGE_ID": "PAGE_ID",
+      "NOTION_VERSION": "2022-06-28",
+      "NOTION_BASE_URL": "https://api.notion.com/v1"
+    },
+    "active": true
+  },
+  "mcp-server-langfuse": {
+    "source_type": "project",
+    "source_url": null,
+    "project_path": "servers_source/mcp-server-langfuse",
+    "transport": "stdio",
+    "setup_commands": [
+      "npm install",
+      "npm run build"
+    ],
+    "start_command": "node {PROJECT_PATH}/build/index.js",
+    "pre_steps": [],
+    "external": true,
+    "env": {
+      "LANGFUSE_PUBLIC_KEY": "LANGFUSE_PUBLIC_KEY",
+      "LANGFUSE_SECRET_KEY": "LANGFUSE_SECRET_KEY",
+      "LANGFUSE_BASEURL": "https://us.cloud.langfuse.com"
+    },
+    "active": true
+  },
+  "amadeus-mcp": {
+    "source_type": "project",
+    "source_url": "",
+    "project_path": "servers_source/mcp-amadeus",
+    "transport": "stdio",
+    "setup_commands": [
+      "uv venv",
+      "source .venv/bin/activate",
+      "uv sync"
+    ],
+    "pre_steps": [],
+    "start_command": "uv --directory {PROJECT_PATH}/src/ run server.py",
+    "env": {
+      "AMADEUS_API_KEY": "AMADEUS_API_KEY",
+      "AMADEUS_API_SECRET": "AMADEUS_API_SECRET"
+    },
+    "active": true
+  },
+  "arxiv-mcp": {
+    "source_type": "project",
+    "source_url": "",
+    "project_path": "servers_source/arxiv-mcp-server",
+    "transport": "stdio",
+    "setup_commands": [
+      "uv venv",
+      "source .venv/bin/activate",
+      "uv sync",
+      "mkdir ./paper"
+    ],
+    "start_command": "uv run main.py --storage-path ./paper",
+    "pre_steps": []
+  },
+  "email-mcp":{
+    "source_type": "project",
+    "source_url": "",
+    "project_path": "servers_source/email-mcp",
+    "transport": "stdio",
+    "setup_commands": [
+      "npm install",
+      "chmod +x ./node_modules/.bin/tsc",
+      "npm run build"
+    ],
+    "start_command": "npm run start",
+    "pre_steps": [],
+    "env": {
+      "EMAIL_PROVIDER":"smtp",
+      "SMTP_HOST":"smtp.xxx.com",
+      "SMTP_PORT":"SMTP_PORT",
+      "SMTP_SECURE":"true",
+      "SMTP_USER":"user@mail.com",
+      "SMTP_PASS":"SMTP_PASSWORD",
+      "DEFAULT_FROM_EMAIL":"user@mail.com"
+    },
+    "active": true
+  },
+  "git-local-mcp":{
+    "source_type": "project",
+    "source_url": "",
+    "project_path": "servers_source/github-mcp-server",
+    "transport": "stdio",
+    "setup_commands": [
+      "npm install --no-audit",
+      "npm run build",
+      "npm link"
+    ],
+    "pre_steps": ["node git_build.js"],
+    "start_command": "node {PROJECT_PATH}/dist/index.js",
+    "env": {
+    },
+    "active": true
+  },
+  "filesystem-mcp":{
+    "source_type": "project",
+    "source_url": "",
+    "project_path": "servers_source/filesystem-mcp-server",
+    "transport": "stdio",
+    "setup_commands": [
+      "npm install",
+      "npm run build"
+    ],
+    "start_command": "node {PROJECT_PATH}/dist/index.js",
+    "pre_steps": ["node folder_build.js"],
+    "env": {
+      "FS_BASE_DIRECTORY": "/expe_dir/personal_data"
+
+    },
+    "active": true
+  },
+  "ali-cloud-ops-mcp":{
+    "source_type": "project",
+    "source_url": "",
+    "project_path": "servers_source/alibaba-cloud-ops-mcp-server",
+    "transport": "stdio",
+    "timeout": 300,
+    "setup_commands": [
+      "uv venv --python 3.11",
+      "source .venv/bin/activate",
+      "uv sync"
+    ],
+    "start_command": "uv run python main.py --services ecs",
+    "pre_steps": ["uv run python ECS_Create.py"],
+    "env": {
+      "ALIBABA_CLOUD_ACCESS_KEY_ID": "ALIBABA_CLOUD_ACCESS_KEY_ID",
+      "ALIBABA_CLOUD_ACCESS_KEY_SECRET": "ALIBABA_CLOUD_ACCESS_KEY_SECRET"
+    },
+    "active": true
+  },
+  "ali-cloud-dms-mcp":{
+    "source_type": "project",
+    "source_url": "",
+    "project_path": "servers_source/alibabacloud-dms-mcp-server",
+    "transport": "stdio",
+    "setup_commands": [
+      "uv sync"
+    ],
+    "start_command": "uv --directory {PROJECT_PATH}/src/alibabacloud_dms_mcp_server run server.py",
+    "pre_steps": [
+      "uv run python ali_dms_database_build.py"
+    ],
+    "env": {
+      "ALIBABA_CLOUD_ACCESS_KEY_ID": "ALIBABA_CLOUD_ACCESS_KEY_ID",
+      "ALIBABA_CLOUD_ACCESS_KEY_SECRET": "ALIBABA_CLOUD_ACCESS_KEY_SECRET",
+      "DATABASE_ID": "DATABASE_ID",
+      "REGION_ID": "REGION_ID",
+      "POLARDB_CLUSTER_ID": "POLARDB_CLUSTER_ID"
+    },
+    "active": true
+  },
+  "wikipedia-mcp":{
+    "source_type": "project",
+    "source_url": "",
+    "project_path": "servers_source/wikipedia-mcp-server",
+    "transport": "stdio",
+    "setup_commands": [
+      "npm install",
+      "npm run build"
+    ],
+    "start_command": "node {PROJECT_PATH}/dist/index.js",
+    "pre_steps": [],
+    "active": true
+  }
+}
+
+
+

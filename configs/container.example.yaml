@@ -1,0 +1,12 @@
+# Container configuration for MCP Sandbox
+# 
+# Options:
+#   1. Use pre-built base image (recommended for faster startup):
+#      image: mcp-sandbox-base:latest
+#      (Build with: ./scripts/build_base_image.sh)
+#
+#   2. Use standard image (slower, installs dependencies on first use):
+#      image: nikolaik/python-nodejs:latest
+
+image: mcp-sandbox-base:latest  # Pre-built base image with uv, nodejs, python
+name: mcp-sandbox

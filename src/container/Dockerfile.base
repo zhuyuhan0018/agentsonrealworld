@@ -1,0 +1,66 @@
+# Base Docker image for MCP Sandbox
+# Pre-installs common tools: Python, Node.js, uv, and common dependencies
+
+FROM nikolaik/python-nodejs:latest
+
+# Set working directory
+WORKDIR /workspace
+
+# Install common system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    wget \
+    build-essential \
+    iptables \
+    net-tools \
+    iproute2 \
+    lsof \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies for proxy (aiohttp, aiohttp-sse)
+# These are required for the stdio-to-SSE proxy server
+RUN pip3 install --no-cache-dir requests aiohttp aiohttp-sse httpx
+
+
+
+# Verify installations
+RUN python3 --version && \
+    node --version && \
+    npm --version && \
+    python3 -c "import aiohttp, aiohttp_sse; print('Proxy dependencies verified')" && \
+    echo "Base image setup complete"
+
+# Install typescript globally
+# RUN npm i -g typescript
+
+# Create directories for MCP infrastructure
+RUN mkdir -p /mcp_interceptors /mcp_proxy /mcp_logs/http_requests /mcp_logs/system_calls /mcp_logs/http_replay /mcp_scripts
+
+# Copy container infrastructure code (interceptors, proxy, replay, scripts)
+# These are used at runtime, so we include them in the base image
+COPY src/container/interceptors /mcp_interceptors/interceptors
+COPY src/container/proxy/ /mcp_proxy/
+COPY src/container/replay /mcp_interceptors/replay
+COPY src/container/manage_network.sh /mcp_scripts/manage_network.sh
+RUN mkdir -p /expe_dir
+
+# Make network management script executable
+RUN chmod +x /mcp_scripts/manage_network.sh
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+# ENV NODE_ENV=production
+ENV PYTHONPATH=.:/mcp_interceptors:$PYTHONPATH
+
+
+# ENV UV_DEFAULT_INDEX=https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
+
+# ENV RUSTUP_DIST_SERVER="https://rsproxy.cn"
+# ENV RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup"
+# Keep container running in detached mode
+# For interactive shell access, use: docker exec -it mcp-sandbox /bin/bash
+# Note: docker attach will only show tail output, use docker exec -it for interactive shell
+CMD ["tail", "-f", "/dev/null"]
+
