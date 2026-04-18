@@ -31,6 +31,7 @@ configs/*.yaml
 .history/
 
 servers_source/
+servers_source.zip
 
 .vscode/
 workflow_logs/

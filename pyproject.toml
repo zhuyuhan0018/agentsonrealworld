@@ -2,8 +2,8 @@
 name = "GrantBox"
 version = "0.1.0"
 description = "Agent execution sandbox with LangChain/LangGraph, MCP tools, and defense hooks"
-authors = [{ name = "", email = "" }]
-requires-python = ">=3.11"
+authors = [{ name = "GrantBox", email = "maintainers@example.com" }]
+requires-python = ">=3.10"
 readme = "README.md"
 
 dependencies = [
