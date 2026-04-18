@@ -50,5 +50,14 @@ unzip -tq "$ZIP_PATH"
 echo "Extracting to $ROOT/servers_source/ ..."
 unzip -q -o "$ZIP_PATH" -d "$ROOT/servers_source"
 
+# Release zip nests paths as servers_source/<mcp-dirs>; flatten so configs match servers_source/notion-mcp, etc.
+if [ -d "$ROOT/servers_source/servers_source" ]; then
+  echo "Flattening nested servers_source/ directory from archive..."
+  shopt -s dotglob nullglob
+  mv "$ROOT/servers_source/servers_source/"* "$ROOT/servers_source/"
+  rmdir "$ROOT/servers_source/servers_source"
+  shopt -u dotglob nullglob
+fi
+
 echo "Done. Top-level entries:"
 ls -la "$ROOT/servers_source" | head -25
