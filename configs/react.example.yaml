@@ -1,7 +1,9 @@
 mode: react
 model:
-  vendor: openai
-  name: gpt-5
+  # For OpenAI main model + DeepSeek judger, set OPENAI_API_KEY and DEEPSEEK_API_KEY.
+  # For DeepSeek-only (single key), use vendor/name below for both main and judger.
+  vendor: deepseek
+  name: deepseek-chat
   kwargs:
     max_steps: 5
     max_injection_iter: 2
