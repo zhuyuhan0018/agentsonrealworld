@@ -1,0 +1,77 @@
+@startuml
+' ============================================================
+' 图：基于 ReAct（Reasoning + Acting）的智能体闭环执行流程
+' 适用于学位论文插图（印刷友好、术语规范）
+' ============================================================
+
+title <b>图：ReAct 模式下大语言模型智能体的闭环执行流程</b>\n<size:11><i>ReAct (Reasoning and Acting) closed-loop execution for LLM-based agents</i></size>
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica Neue", Helvetica, "Noto Sans CJK SC", Arial, sans-serif
+skinparam defaultFontSize 12
+skinparam padding 10
+skinparam linetype ortho
+skinparam nodesep 55
+skinparam ranksep 55
+skinparam shadowing false
+skinparam ArrowThickness 1.2
+skinparam roundCorner 4
+
+hide stereotype
+
+skinparam rectangle {
+    BorderThickness 1.2
+    RoundCorner 4
+    BackgroundColor<<In>>    #FAFAFA
+    BorderColor<<In>>        #424242
+    FontColor<<In>>          #212121
+    BackgroundColor<<Core>>  #ECEFF1
+    BorderColor<<Core>>      #37474F
+    FontColor<<Core>>        #263238
+    BackgroundColor<<Step>>  #FFFFFF
+    BorderColor<<Step>>      #546E7A
+    FontColor<<Step>>        #263238
+    BackgroundColor<<Env>>   #F5F5F5
+    BorderColor<<Env>>       #757575
+    FontColor<<Env>>         #424242
+    BackgroundColor<<Obs>>  #ECEFF1
+    BorderColor<<Obs>>       #546E7A
+    FontColor<<Obs>>         #37474F
+    BackgroundColor<<Out>>   #FAFAFA
+    BorderColor<<Out>>       #616161
+    FontColor<<Out>>         #212121
+}
+
+' ---------- 节点 ----------
+together {
+    rectangle "<b>任务输入</b>\n<size:10>Task / user query</size>" as User <<In>>
+    rectangle "<b>智能体核心</b>\n<size:10>LLM-based agent</size>" as Agent <<Core>>
+}
+
+rectangle "<b>思考</b> Thought\n<size:10>推理与状态更新</size>" as Thought <<Step>>
+rectangle "<b>行动</b> Action\n<size:10>工具选择与参数生成</size>" as Action <<Step>>
+rectangle "<b>外部环境</b>\n<size:10>API / 数据库 / 代码执行等</size>" as Env <<Env>>
+rectangle "<b>观察</b> Observation\n<size:10>工具返回的结构化反馈</size>" as Obs <<Obs>>
+
+together {
+    rectangle "<b>最终输出</b>\n<size:10>Answer / final response</size>" as Answer <<Out>>
+}
+
+' ---------- 主流程：顺时针闭环 ----------
+User -[#424242]down-> Agent : <size:10>提交任务
+
+Agent -[#37474F]right-> Thought : <size:10>(1) 生成
+
+Thought -[#37474F]right-> Action : <size:10>(2) 规划
+
+Action -[#37474F]down-> Env : <size:10>(3) 调用
+
+Env -[#616161]left-> Obs : <size:10>执行结果
+
+Obs -[#546E7A]up-> Agent : <size:10>(4) 反馈\n<size:10><i>作为下一轮上下文</i>
+
+' ---------- 终止分支 ----------
+' 兼容 PlantUML 1.2021：旧版不支持 -[#color|dashed]->，改用点线 ..[#]> 
+Agent ..[#757575]> Answer : <size:10>满足终止条件\n<size:10><i>（如可验证答案、拒绝响应或步数上限）</i>
+
+@enduml

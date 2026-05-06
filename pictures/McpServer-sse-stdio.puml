@@ -1,0 +1,82 @@
+@startuml
+title <b>MCP 传输拓扑（方案A）</b>\n<size:10>代理网关将本地 Stdio 服务封装为 HTTP/SSE 端点</size>
+
+left to right direction
+hide stereotype
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontName Arial, Helvetica, sans-serif
+skinparam defaultFontSize 12
+skinparam nodesep 55
+skinparam ranksep 55
+skinparam ArrowThickness 1.2
+skinparam roundCorner 4
+
+skinparam package {
+  BorderColor #90A4AE
+  BackgroundColor #FBFCFE
+  FontColor #263238
+}
+skinparam rectangle {
+  BorderColor #607D8B
+  BackgroundColor #F7FAFF
+  FontColor #263238
+  BorderThickness 1.1
+}
+skinparam note {
+  BorderColor #B0BEC5
+  BackgroundColor #ECEFF1
+  FontColor #37474F
+}
+
+package "客户端层" as L_CLIENT {
+  rectangle "<b>LLM 智能体</b>\n<size:10>MCP 客户端</size>" as CLIENT #EAF2FF
+}
+
+package "网关层" as L_PROXY {
+  rectangle "<color:#FFFFFF><b>SSE-Stdio 代理网关</b>\n<size:10>统一网络访问端点</size></color>" as PROXY #37474F
+}
+
+package "本地 MCP 服务层（由代理封装）" as L_LOCAL {
+  rectangle "<b>MCP 服务 A</b>\n<size:10>本地文件系统</size>" as S_A
+  rectangle "<b>MCP 服务 B</b>\n<size:10>云资源适配工具</size>" as S_B
+  rectangle "<b>MCP 服务 C</b>\n<size:10>数据库适配工具</size>" as S_C
+  S_A -[hidden]down- S_B
+  S_B -[hidden]down- S_C
+}
+
+package "远端后端服务（非 MCP 角色）" as L_BACKEND {
+  rectangle "云基础设施 API" as B_CLOUD #FFFFFF
+  rectangle "生产数据库" as B_DB #FFFFFF
+  B_CLOUD -[hidden]down- B_DB
+}
+
+' 本地直连通道
+CLIENT -[#2F3B52]-> S_A : "<b>Stdio（进程管道）</b>"
+
+' 客户端与网关之间的网络通道
+CLIENT -[#5C6BC0]-> PROXY : "<b>HTTP POST</b>"
+PROXY ..[#5C6BC0]> CLIENT : "<b>SSE 事件流</b>"
+
+' 代理到本地 MCP 服务
+PROXY -[#2F3B52]-> S_B : "<b>Stdio（进程管道）</b>"
+PROXY -[#2F3B52]-> S_C : "<b>Stdio（进程管道）</b>"
+
+' 本地 MCP 服务调用远端后端
+S_B -[#78909C]-> B_CLOUD : "服务调用"
+S_C -[#78909C]-> B_DB : "服务调用"
+
+note bottom of PROXY
+  <size:10>协议转换 + 统一安全拦截 / 审计日志 / 健康探活</size>
+end note
+
+legend right
+  <b>线型语义</b>\n
+  深色实线：Stdio（本地进程管道）\n
+  蓝色实线：HTTP POST（客户端 -> 网关）\n
+  蓝色虚线：SSE（网关 -> 客户端）\n
+  灰色实线：后端服务调用
+endlegend
+
+@enduml

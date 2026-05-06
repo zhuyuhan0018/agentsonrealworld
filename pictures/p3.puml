@@ -1,0 +1,51 @@
+@startuml
+' 兼容旧版 PlantUML：勿用 #BG_SAFE（应用字面 hex）；箭头勿用 [#c,thickness,n]
+' 勿用 !theme（部分 1.202x 无效）
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial, Helvetica, sans-serif
+skinparam shadowing false
+skinparam nodesep 45
+skinparam ranksep 55
+skinparam ArrowColor #333333
+
+left to right direction
+
+skinparam package {
+    BorderColor #546E7A
+    BorderStyle dashed
+    BackgroundColor transparent
+    Padding 10
+}
+skinparam rectangle {
+    BorderColor #546E7A
+    RoundCorner 4
+}
+hide stereotype
+
+' === 左侧：外部数据源域（package 比嵌套 rectangle 更易被旧版解析）===
+package "<b>外部数据源</b>\n<size:10>External Data Source · Webpage / Untrusted Input</size>" as ExtSource {
+    rectangle "合法上下文\n<size:10>(Normal Context)</size>" as NormalCtx #E8F5E9
+    rectangle "恶意注入载荷\n<size:10>(Malicious Payload)</size>" as MaliciousCtx #FFEBEE
+    NormalCtx -[hidden]down- MaliciousCtx
+}
+
+' === 中间：智能体上下文核心 ===
+package "<b>智能体上下文窗口</b>\n<size:10>Agent Context Window · LLM Processing Boundary</size>" as ContextWindow {
+    rectangle "注意力机制\n<size:10>(Attention)</size>" as Attention #E3F2FD
+    rectangle "<b>上下文突变</b>\n<size:10><color:#E53935>恶意载荷覆盖并劫持合法指令</color></size>" as Mutation #FFEBEE
+    Attention -[hidden]down- Mutation
+}
+
+' === 右侧：被劫持的执行端 ===
+rectangle "<b>特权工具 API</b>\n<size:10>Privileged API (e.g., Drop DB)</size>" as TargetAPI
+
+' === 数据流与攻击链（单色箭头 + 点线表示篡改）===
+NormalCtx -[#4CAF50]-> Attention : " <size:10><color:#2E7D32>正常流</color></size>"
+MaliciousCtx -[#E53935]-> Attention : " <size:10><color:#C62828>注入攻击</color></size>"
+
+Attention ..[#E53935]> Mutation : " <size:10>逻辑篡改</size>"
+
+Mutation -[#E53935]-> TargetAPI : " <size:10><color:#C62828><b>特权劫持与越权执行</b>\n<size:10>(Privilege Hijacking)</size>"
+
+@enduml

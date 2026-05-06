@@ -1,0 +1,75 @@
+@startuml
+' ============================================================
+' 图5：基于 Linux + UnionFS 的容器沙箱隔离与环境重置机制
+' 兼容 PlantUML 1.2021（避免复杂图标与新版语法）
+' ============================================================
+
+title <b>图5 容器化沙箱隔离与环境重置机制（Linux Kernel + UnionFS）</b>\n<size:11><i>Layered OS architecture for isolation, containment, and fast reset</i></size>
+
+top to bottom direction
+hide stereotype
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontName Arial, Helvetica, sans-serif
+skinparam defaultFontSize 12
+skinparam nodesep 35
+skinparam ranksep 38
+skinparam ArrowColor #37474F
+skinparam ArrowThickness 1.2
+skinparam roundCorner 4
+
+skinparam rectangle {
+  BorderColor #455A64
+  FontColor #263238
+  BorderThickness 1.2
+  RoundCorner 4
+}
+
+' ---------------- Top application ----------------
+rectangle "<b>MCP Server Process</b>\n<size:10>含高危特权的工具进程</size>" as MCP #FFF3E0
+
+' ---------------- UnionFS middle core ----------------
+package "<b>UnionFS 文件系统层</b>\n<size:10>Copy-on-Write Overlay</size>" as UFS {
+  rectangle "<b>Upperdir</b>\n<size:10>可读写临时容器层（易变）</size>" as UPPER #FFE082
+
+  rectangle "<b>Immutable Guard Boundary</b>\n<size:10>Lowerdir 顶部只读防线（不可穿透）</size>" as GUARD #CFD8DC
+
+  rectangle "<b>Lowerdir</b>\n<size:10>只读公共运行环境层（稳定、不可变）</size>\n<size:10>Base runtime image / shared dependencies</size>" as LOWER #90A4AE
+
+  UPPER -[hidden]down- GUARD
+  GUARD -[hidden]down- LOWER
+}
+
+' ---------------- Kernel isolation layer ----------------
+package "<b>Linux 内核隔离层</b>\n<size:10>Kernel Security Barriers</size>" as KERNEL {
+  together {
+    rectangle "<b>Namespaces</b>\n<size:10>进程 / 网络 / 视图隔离</size>" as NS #E3F2FD
+    rectangle "<b>Cgroups</b>\n<size:10>物理资源节流</size>" as CG #E3F2FD
+  }
+}
+
+' ---------------- Host base ----------------
+rectangle "<color:#FFFFFF><b>Host OS & Hardware</b>\n<size:10>宿主机操作系统与物理硬件</size></color>" as HOST #546E7A
+
+' ---------------- Structural stacking links ----------------
+MCP -[hidden]down- UFS
+UFS -[hidden]down- KERNEL
+KERNEL -[hidden]down- HOST
+NS -[hidden]right- CG
+
+' ---------------- Attack and containment semantics ----------------
+MCP -[#C62828]-> UPPER : "<b>恶意特权调用 / 数据抹除尝试</b>"
+UPPER -[#C62828]-> GUARD : "<b>穿透尝试在 Lowerdir 边界被阻断</b>"
+
+' ---------------- CoW reset semantics ----------------
+rectangle "<b>Destroy / Recycle Bin</b>\n<size:10>销毁临时层并重建</size>" as BIN #FFEBEE
+UPPER -[#EF6C00]-> BIN : "<b>UnionFS CoW机制：</b>\n隔离副作用并实现亚秒级环境重置"
+
+' ---------------- Optional visual emphasis ----------------
+note right of GUARD
+  <size:10><b>RO Barrier</b>\n只读边界阻止破坏性写入下沉至 Lowerdir</size>
+end note
+
+@enduml

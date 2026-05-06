@@ -1,0 +1,90 @@
+@startuml
+' ============================================================
+' 图2：Plan-and-Execute 标准流程（Planner 一次性规划 → Executor 逐步消费计划）
+' 兼容 PlantUML 1.2021+：避免 [#color|dashed]->，点线用 ..[#]>
+' ============================================================
+
+title <b>图2：Plan-and-Execute 模式下的智能体执行流程</b>\n<size:11><i>Standard Plan-and-Execute: plan once, execute step-by-step until completion</i></size>
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica Neue", Helvetica, "Noto Sans CJK SC", Arial, sans-serif
+skinparam defaultFontSize 12
+skinparam padding 10
+skinparam linetype ortho
+skinparam nodesep 48
+skinparam ranksep 46
+skinparam shadowing false
+skinparam ArrowThickness 1.2
+skinparam roundCorner 4
+
+skinparam package {
+    BorderColor #37474F
+    FontColor #263238
+    BackgroundColor #FAFAFA
+    Padding 12
+}
+
+hide stereotype
+
+skinparam rectangle {
+    BorderThickness 1.2
+    RoundCorner 4
+    BackgroundColor<<In>>    #FAFAFA
+    BorderColor<<In>>        #424242
+    FontColor<<In>>          #212121
+    BackgroundColor<<Core>>  #ECEFF1
+    BorderColor<<Core>>      #37474F
+    FontColor<<Core>>        #263238
+    BackgroundColor<<Step>>  #FFFFFF
+    BorderColor<<Step>>      #546E7A
+    FontColor<<Step>>        #263238
+    BackgroundColor<<Env>>   #F5F5F5
+    BorderColor<<Env>>       #757575
+    FontColor<<Env>>         #424242
+    BackgroundColor<<Obs>>   #ECEFF1
+    BorderColor<<Obs>>       #546E7A
+    FontColor<<Obs>>         #37474F
+    BackgroundColor<<Out>>   #FAFAFA
+    BorderColor<<Out>>       #616161
+    FontColor<<Out>>         #212121
+    BackgroundColor<<Plan>>  #E3F2FD
+    BorderColor<<Plan>>      #1565C0
+    FontColor<<Plan>>        #0D47A1
+    BackgroundColor<<Synth>> #F3E5F5
+    BorderColor<<Synth>>     #6A1B9A
+    FontColor<<Synth>>       #4A148C
+}
+
+' ---------- 阶段 I：一次性全局规划 ----------
+package "阶段 I：全局规划（先于真实工具交互）" as StageP {
+    rectangle "<b>用户请求</b>\n<size:10>User query</size>" as U <<In>>
+    rectangle "<b>全局规划器</b>\n<size:10>Planner</size>" as Pl <<Core>>
+    rectangle "<b>执行计划工件</b>\n<size:10>DAG / 线性步骤列表 · 冻结不再改（理想情形）</size>" as Pdoc <<Plan>>
+
+    U -[#424242]down-> Pl : <size:10>任务输入
+    Pl -[#1565C0]down-> Pdoc : <size:10>分解与排序 · 一次性产出
+}
+
+' ---------- 阶段 II：按步骤迭代执行直至耗尽 ----------
+package "阶段 II：迭代执行（逐步消费计划）" as StageE {
+    rectangle "<b>分步执行器</b>\n<size:10>Executor · 维护当前步骤/指针 · 按拓扑取就绪节点</size>" as Ex <<Core>>
+    rectangle "<b>外部工具与环境</b>\n<size:10>Tools / sandbox</size>" as Tool <<Env>>
+    rectangle "<b>观察</b>\n<size:10>Observation · 可能不可信</size>" as Obs <<Obs>>
+
+    Ex -[#37474F]down-> Tool : <size:10>对<b>当前计划步骤</b>发起调用
+    Tool -[#616161]down-> Obs : <size:10>原始反馈
+    Obs -[#546E7A]up-> Ex : <size:10>更新中间状态 · 映射参数 · <size:10><i>尚有待执行节点则继续本环；反馈默认不回流 Planner</i>
+}
+
+rectangle "<b>答案综合</b>\n<size:10>Synthesizer · 汇总各步中间结果</size>" as Synth <<Synth>>
+rectangle "<b>最终输出</b>\n<size:10>回答用户 / 报错终止</size>" as Out <<Out>>
+
+' ---------- 跨阶段：计划只下发一次；执行器持有并逐步消耗 ----------
+Pdoc -[#1565C0]down-> Ex : <size:10>注入计划工件\n<size:10><i>Executor 逐步消费，非一次性旁路</i>
+
+' ---------- 计划耗尽后的标准出口（与执行内循环区分）----------
+Ex ..[#6A1B9A]> Synth : <size:10>全部就绪步骤已执行完\n<size:10><i>或某步失败致提前终止</i>\n<size:10><i>节点偏离时链式崩溃风险↑（柔性受限）</i>
+
+Synth ..[#757575]> Out : <size:10>生成最终响应
+
+@enduml

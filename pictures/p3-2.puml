@@ -1,0 +1,59 @@
+@startuml
+' 图3-2：学术化极简版（兼容 PlantUML 1.2021）
+
+title <b>图3-2 提示注入导致越权调用的机制示意</b>\n<size:11><i>Mechanism of prompt-injection-induced privileged tool invocation</i></size>
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial, Helvetica, sans-serif
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 55
+skinparam ArrowColor #424242
+
+left to right direction
+hide stereotype
+
+skinparam package {
+  BorderColor #607D8B
+  BorderStyle dashed
+  BackgroundColor transparent
+  Padding 10
+}
+skinparam rectangle {
+  BorderColor #607D8B
+  RoundCorner 4
+  FontColor #263238
+}
+
+package "<b>外部输入域</b>\n<size:10>Untrusted Input Domain</size>" as DomainInput {
+  rectangle "正常上下文\n<size:10>Benign Context</size>" as Benign #E8F5E9
+  rectangle "恶意载荷\n<size:10>Injected Payload</size>" as Attack #FFEBEE
+  Benign -[hidden]down- Attack
+}
+
+package "<b>智能体处理域</b>\n<size:10>Agent Context Processing Domain</size>" as DomainAgent {
+  rectangle "上下文集成\n<size:10>Context Integration</size>" as Integrate #E3F2FD
+  rectangle "指令劫持\n<size:10>Instruction Hijacking</size>" as Hijack #FFEBEE
+  Integrate -[hidden]down- Hijack
+}
+
+package "<b>工具执行域</b>\n<size:10>Privileged Tool Domain</size>" as DomainTool {
+  rectangle "特权工具调用\n<size:10>Privileged API Invocation</size>" as API #FFFDE7
+}
+
+' (1) 正常路径（弱强调）
+Benign -[#78909C]-> Integrate : "(1) normal flow"
+
+' (2)(3)(4) 攻击路径（主路径）
+Attack -[#C62828]-> Integrate : "(2) prompt injection"
+Integrate ..[#C62828]> Hijack : "(3) context override"
+Hijack -[#C62828]-> API : "(4) privileged invocation"
+
+' 信任边界提示（用于正文配合解释）
+note bottom of DomainAgent
+  Trust boundary:
+  untrusted observations should not redefine global intent.
+end note
+
+@enduml

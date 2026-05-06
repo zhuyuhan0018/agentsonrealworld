@@ -1,0 +1,62 @@
+@startuml
+' 图5-2：Linux + UnionFS 容器沙箱隔离与重置（兼容 PlantUML 1.2021）
+
+title <b>图5-2 容器化沙箱隔离与环境重置机制</b>\n<size:11><i>Layered OS Stack with UnionFS CoW-based rollback</i></size>
+
+top to bottom direction
+hide stereotype
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial, Helvetica, sans-serif
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 36
+skinparam ranksep 36
+skinparam ArrowColor #37474F
+skinparam ArrowThickness 1.2
+
+skinparam rectangle {
+  BorderColor #455A64
+  FontColor #263238
+  BorderThickness 1.2
+  RoundCorner 4
+}
+
+rectangle "<b>MCP Server Process</b>\n<size:10>含高危特权的工具进程</size>" as MCP #E3F2FD
+
+package "<b>UnionFS 文件系统层</b>\n<size:10>Copy-on-Write Overlay</size>" as UFS {
+  rectangle "<b>Upperdir</b>\n<size:10>可读写临时容器层（易变）</size>" as UPPER #FFE082
+  rectangle "<b>Read-only Guard Boundary</b>\n<size:10>Lowerdir 顶部防线（不可穿透）</size>" as GUARD #CFD8DC
+  rectangle "<b>Lowerdir</b>\n<size:10>只读公共运行环境层（稳定、不可变）</size>" as LOWER #90A4AE
+
+  UPPER -[hidden]down- GUARD
+  GUARD -[hidden]down- LOWER
+}
+
+package "<b>Linux 内核隔离层</b>\n<size:10>Kernel Security Barriers</size>" as KERNEL {
+  together {
+    rectangle "<b>Namespaces</b>\n<size:10>进程 / 网络 / 视图隔离</size>" as NS #E3F2FD
+    rectangle "<b>Cgroups</b>\n<size:10>物理资源节流</size>" as CG #E3F2FD
+  }
+}
+
+rectangle "<color:#FFFFFF><b>Host OS & Hardware</b>\n<size:10>宿主机操作系统与物理硬件</size></color>" as HOST #546E7A
+rectangle "<b>Destroy / Recycle Bin</b>\n<size:10>销毁临时层并重建</size>" as BIN #FFEBEE
+
+MCP -[hidden]down- UFS
+UFS -[hidden]down- KERNEL
+KERNEL -[hidden]down- HOST
+NS -[hidden]right- CG
+
+' 破坏动作与阻截：仅破坏 Upperdir，在 Guard 处被截断
+MCP -[#D32F2F]-> UPPER : "<b>恶意特权调用 / 数据抹除尝试</b>"
+UPPER -[#D32F2F]-> GUARD : "<b>阻断于只读边界</b>"
+
+' CoW 重置机制
+UPPER -[#0277BD]-> BIN : "<b>UnionFS CoW机制：</b>\n隔离副作用并实现亚秒级环境重置"
+
+note right of GUARD
+  <size:10>RO barrier prevents write-through\ninto immutable Lowerdir.</size>
+end note
+
+@enduml
